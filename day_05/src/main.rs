@@ -1,4 +1,3 @@
-use std::array;
 use std::fs::File;
 use std::io::{BufReader, Read};
 use std::collections::HashMap;
@@ -8,6 +7,12 @@ use std::collections::HashMap;
 struct Range {
     start: u64,
     length: u64
+}
+
+impl Range {
+    fn end(&self) -> u64 {
+        self.start + self.length
+    }
 }
 
 
@@ -59,22 +64,23 @@ fn solve_part_one(mapping_categories: [&str; 7], map_hash: HashMap<String, Vec<M
             for maps in chain_mapping {
                 
                 let range_map = maps;
-                let vec_source: Vec<u64> = (range_map.source_range.start..range_map.source_range.start + range_map.source_range.length as u64).collect();
-                let vec_dest: Vec<u64> = (range_map.dest_range.start..range_map.dest_range.start + range_map.dest_range.length as u64).collect();
-                if let Some(index) = vec_source.iter().position(|&x| x == mapped_value) {
-                    mapped_value = vec_dest[index];
+
+                if is_between(mapped_value, range_map.source_range.start, range_map.source_range.end()) {
+                    let index = mapped_value - range_map.source_range.start;
+                    mapped_value = index + range_map.dest_range.start;
                     break;
-                } else {
-                    mapped_value = mapped_value;
-                    continue;
                 }
             }
         }
         final_mapped_values.push(mapped_value)
     }
 
-    println!("{:?}", final_mapped_values.clone());
     *final_mapped_values.iter().min().unwrap()
+}
+
+
+fn is_between(number: u64, lower_bound: u64, upper_bound: u64) -> bool {
+    number >= lower_bound && number < upper_bound
 }
 
 
